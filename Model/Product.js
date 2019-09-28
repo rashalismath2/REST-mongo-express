@@ -2,8 +2,8 @@ const mongoose=require("mongoose");
 const schema=mongoose.Schema;
 
 const ProductChema=new schema({
-    name:String,
-    price:Number
+    name:{type:String,required:true},
+    price:{type:Number,required:true}
 })
 
 const ProductModel=mongoose.model("Product",ProductChema);

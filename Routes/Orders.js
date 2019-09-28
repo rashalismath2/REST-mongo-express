@@ -5,15 +5,18 @@ const Order=require("../Model/Order.js");
 
 router.get('/',(req,res,next)=>{
     Order.find()
+        .select('id name product')
+        .populate('product','id name price')
         .then((data)=>{        
             res.status(200).json({
                 message:"Order Lists",
-                product:data
+                order:data
             })
         })
-        .catch(()=>{
+        .catch((e)=>{
             res.status(500).json({
-                message:"Could not fetch the data"
+                message:"Could not fetch the data",
+                error:e
             })
         })
 });
@@ -22,13 +25,13 @@ router.post('/',(req,res,next)=>{
     
     var order=new Order({
         name:req.body.name,
-        price:req.body.price
+        product:req.body.productId
     });
     order.save()
         .then((model)=>{
             res.status(200).json({
-                message:"Product Has Been Saved",
-                product:model
+                message:"Order Has Been Saved",
+                order:model
             })
         })
         .catch((error)=>{

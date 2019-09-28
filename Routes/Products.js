@@ -4,12 +4,24 @@ const Product=require("../Model/Product.js");
 
 
 router.get('/',(req,res,next)=>{
-    Product.find()
-        .then((data)=>{        
-            res.status(200).json({
-                message:"Product Lists",
-                product:data
-            })
+    Product.find().select("id name price")
+        .then((data)=>{ 
+            var response={
+                Message:"Products data list",
+                Count:data.length,
+                Products:data.map(result=>{
+                    return {
+                        id:result.id,
+                        name:result.name,
+                        price:result.price,
+                        request:{
+                            method:"GET",
+                            url:`127.0.0.1/api/products/${result.id}`
+                        }
+                    }
+                })
+            }
+            res.status(200).json(response)
         })
         .catch(()=>{
             res.status(500).json({
