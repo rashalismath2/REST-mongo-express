@@ -1,10 +1,37 @@
 const express=require("express");
 const router=express.Router();
 const Product=require("../Model/Product.js");
+const multer=require("multer");
+const JWTAuth=require("../middlewares/JWTAth");
+
+const storage=multer.diskStorage({
+    destination:(req,file,callback)=>{
+        callback(null,"./uploads/");
+    },
+    filename:(req,file,callback)=>{
+        callback(null,file.originalname);
+    }
+});
+
+const fileFilter=(req,file,callback)=>{
+    if(file.mimetype==="image/jpeg" || file.mimetype==="image/png"){
+        callback(null,true);
+    }else{
+        callback(new Error("MimeTypes was not acceptable"),false);
+    }
+}
+
+const upload=multer({
+    storage:storage,
+    limits:{
+        fileSize:1024*1024*5
+    },
+    fileFilter:fileFilter
+});
 
 
-router.get('/',(req,res,next)=>{
-    Product.find().select("id name price")
+router.get('/',JWTAuth,(req,res,next)=>{
+    Product.find().select("id name price prodctImage")
         .then((data)=>{ 
             var response={
                 Message:"Products data list",
@@ -14,6 +41,7 @@ router.get('/',(req,res,next)=>{
                         id:result.id,
                         name:result.name,
                         price:result.price,
+                        prodctImage:result.prodctImage,
                         request:{
                             method:"GET",
                             url:`127.0.0.1/api/products/${result.id}`
@@ -30,11 +58,12 @@ router.get('/',(req,res,next)=>{
         })
 });
 
-router.post('/',(req,res,next)=>{
-    
+router.post('/',JWTAuth,upload.single("productImage"),(req,res,next)=>{
+    console.log(req.file);
     var product=new Product({
         name:req.body.name,
-        price:req.body.price
+        price:req.body.price,
+        productImage:req.file.path
     });
     product.save()
         .then((model)=>{
@@ -45,13 +74,13 @@ router.post('/',(req,res,next)=>{
         })
         .catch((error)=>{
             res.status(500).json({
-                message:"Could not save in to the databse"
+                message:error+" Could not save in to the databse"
             })
         });
 
 });
 
-router.get('/:productId',(req,res,next)=>{
+router.get('/:productId',JWTAuth,(req,res,next)=>{
 
     Product.findById(req.params.productId)
         .then((data)=>{        
@@ -68,12 +97,12 @@ router.get('/:productId',(req,res,next)=>{
 
 });
 
-router.put('/:productId',(req,res,next)=>{
+router.put('/:productId',JWTAuth,(req,res,next)=>{
     res.status(200).json({
         message:"Handling PUT Request to /products/productId "+req.params.productId
     })
 });
-router.delete('/:productId',(req,res,next)=>{
+router.delete('/:productId',JWTAuth,(req,res,next)=>{
     res.status(200).json({
         message:"Handling DELETE Request to /products/productId "+req.params.productId
     })

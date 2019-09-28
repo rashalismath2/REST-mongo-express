@@ -11,6 +11,7 @@ dotenv.config();
 //Route Files
 const productsRoutes=require("./Routes/Products");
 const ordersRoutes=require("./Routes/Orders");
+const userRoutes=require("./Routes/Users");
 
 var app=express();
 app.set('view engine','ejs');
@@ -36,6 +37,7 @@ app.use((req,res,next)=>{
 //Routes
 app.use('/api/products',productsRoutes);
 app.use('/api/orders',ordersRoutes);
+app.use('/api/users',userRoutes);
 
 //Source files
 app.use('/dist',express.static("dist"));
